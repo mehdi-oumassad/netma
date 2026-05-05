@@ -26,7 +26,7 @@ const projects = [
   },
   {
     id: 4,
-    title: "Barber Coo",
+    title: "Barber Co",
     image: "/images/barber.png",
     link: "https://barber-coo.vercel.app/",
     category: "Business Showcase"
