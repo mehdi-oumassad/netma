@@ -104,7 +104,7 @@ export function HeroSection({ onLanguageChange }: HeroSectionProps) {
           className="flex items-center"
         >
           <div className="relative h-10 overflow-hidden text-2xl font-bold tracking-tighter text-white">
-            <img src="/2.png" alt="Netmaroc Logo" className="h-full w-auto object-contain" />
+            <img src="images/Black_Modern_Abstract_Logo-removebg-preview(2).png" alt="Netmaroc Logo" className="h-full w-auto object-contain" />
           </div>
         </motion.div>
 
