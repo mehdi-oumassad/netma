@@ -1,6 +1,12 @@
 import { motion } from 'motion/react';
-import { Github, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Github, Instagram, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
+const socialLinks = [
+  { Icon: Instagram,     href: "https://www.instagram.com/netmaroc_agency/" },
+  { Icon: Github,        href: "https://github.com/toncompte" },
+  { Icon: MessageCircle, href: "https://wa.me/212719535934" },
+];
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -47,10 +53,13 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-zinc-900 text-xs text-zinc-600 font-medium">
           <p>&copy; {currentYear} Netmaroc. {t('footer.rights')}</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            {[Twitter, Instagram, Linkedin, Github].map((Icon, i) => (
+            {/* ✅ utilise socialLinks avec les vrais href */}
+            {socialLinks.map(({ Icon, href }, i) => (
               <motion.a
                 key={i}
-                href="#"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.15 }}
                 className="hover:text-white transition-colors border border-zinc-800 p-2 rounded-full hover:bg-zinc-800"
               >

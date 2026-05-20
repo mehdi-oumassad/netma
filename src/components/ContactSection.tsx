@@ -9,7 +9,7 @@ export default function ContactSection() {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Effet magnétique du bouton
+  // Effet magnétique (uniquement pour PC via MouseEvent)
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
@@ -20,35 +20,44 @@ export default function ContactSection() {
 
   const handleMouseLeave = () => setHoverPosition({ x: 0, y: 0 });
 
-  // Gestion de l'envoi du formulaire (Facile & Efficace)
+  // Gestion de l'envoi optimisée pour Mobile
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setStatus('idle');
 
-    const formData = new FormData(e.currentTarget);
-    // Remplace par ta clé Web3Forms (gratuite sur web3forms.com)
-    formData.append("access_key", "8f376ff6-f687-453c-bc4a-dfc6681f8387");
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const object = Object.fromEntries(formData);
+    
+    // Ta clé Web3Forms
+    object.access_key = "8f376ff6-f687-453c-bc4a-dfc6681f8387";
+    
+    const json = JSON.stringify(object);
 
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        body: formData
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: json
       });
 
       const data = await response.json();
 
       if (data.success) {
         setStatus('success');
-        (e.target as HTMLFormElement).reset();
+        form.reset();
       } else {
         setStatus('error');
       }
     } catch (err) {
+      console.error("Erreur d'envoi:", err);
       setStatus('error');
     } finally {
       setIsSubmitting(false);
-      // Reset le message de succès après 5 secondes
       setTimeout(() => setStatus('idle'), 5000);
     }
   };
@@ -72,6 +81,9 @@ export default function ContactSection() {
         </motion.div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full">
+          {/* Honeypot anti-spam invisible */}
+          <input type="checkbox" name="botcheck" className="hidden" style={{ display: 'none' }} />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Champ Nom */}
             <motion.div 
@@ -82,13 +94,13 @@ export default function ContactSection() {
             >
               <input
                 type="text"
-                name="name" // Attribut requis pour l'envoi
+                name="name"
                 id="name"
                 required
                 className="w-full bg-transparent border-b border-zinc-800 py-4 px-0 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer"
                 placeholder="Name"
               />
-              <label htmlFor="name" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-valid:-top-4 peer-valid:text-xs peer-valid:text-zinc-400">
+              <label htmlFor="name" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs">
                 {t('contact.name_label')}
               </label>
             </motion.div>
@@ -102,13 +114,13 @@ export default function ContactSection() {
             >
               <input
                 type="email"
-                name="email" // Attribut requis
+                name="email"
                 id="email"
                 required
                 className="w-full bg-transparent border-b border-zinc-800 py-4 px-0 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer"
                 placeholder="Email"
               />
-              <label htmlFor="email" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-valid:-top-4 peer-valid:text-xs peer-valid:text-zinc-400">
+              <label htmlFor="email" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs">
                 {t('contact.email_label')}
               </label>
             </motion.div>
@@ -122,19 +134,19 @@ export default function ContactSection() {
             className="relative group mt-4"
           >
             <textarea
-              name="message" // Attribut requis
+              name="message"
               id="message"
               required
               rows={4}
               className="w-full bg-transparent border-b border-zinc-800 py-4 px-0 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer resize-none"
               placeholder="Message"
             />
-            <label htmlFor="message" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-valid:-top-4 peer-valid:text-xs peer-valid:text-zinc-400">
+            <label htmlFor="message" className="absolute left-0 top-4 text-zinc-500 text-sm font-medium transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-white peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs">
               {t('contact.message_label')}
             </label>
           </motion.div>
 
-          {/* Bouton Magnétique & Status */}
+          {/* Bouton & Status */}
           <div className="flex flex-col items-center mt-12 gap-4">
             <motion.button
               ref={buttonRef}
@@ -143,19 +155,26 @@ export default function ContactSection() {
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
               animate={{ x: hoverPosition.x, y: hoverPosition.y }}
+              style={{ touchAction: 'manipulation' }}
               className={`relative flex items-center justify-center w-40 h-40 rounded-full font-bold tracking-wide uppercase text-sm transition-all duration-300 ease-out
-                ${isSubmitting ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-white text-black hover:scale-110 active:scale-95'}`}
+                ${isSubmitting ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-white text-black hover:scale-105 active:scale-95'}`}
             >
               {isSubmitting ? '...' : t('contact.send')}
             </motion.button>
 
-            {/* Messages de retour client */}
-            {status === 'success' && (
-              <p className="text-green-500 font-medium animate-pulse">Message envoyé avec succès !</p>
-            )}
-            {status === 'error' && (
-              <p className="text-red-500 font-medium">Une erreur est survenue. Réessayez.</p>
-            )}
+            {/* Messages de retour */}
+            <div className="h-6">
+                {status === 'success' && (
+                <motion.p initial={{opacity:0}} animate={{opacity:1}} className="text-green-500 font-medium">
+                    Message envoyé !
+                </motion.p>
+                )}
+                {status === 'error' && (
+                <motion.p initial={{opacity:0}} animate={{opacity:1}} className="text-red-500 font-medium">
+                    Erreur. Réessayez plus tard.
+                </motion.p>
+                )}
+            </div>
           </div>
         </form>
       </div>
